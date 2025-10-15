@@ -126,9 +126,20 @@ return {
 
 			-- Diagnostic Config
 			-- See :help vim.diagnostic.Opts
+
+			vim.o.updatetime = 2000 -- 2 sec holding coursor to open diagnostic popup window
 			vim.diagnostic.config({
 				severity_sort = true,
-				float = { border = "rounded", source = "if_many" },
+				update_in_insert = false,
+				float = {
+					float = {
+						style = "minimal",
+					},
+					border = "solid",
+					source = true,
+					header = "",
+					close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+				},
 				underline = { severity = vim.diagnostic.severity.ERROR },
 				signs = vim.g.have_nerd_font and {
 					text = {
@@ -140,20 +151,42 @@ return {
 				} or {},
 				virtual_text = {
 					source = "if_many",
-					spacing = 2,
-					prefix = "●",
+					spacing = 1,
+					prefix = "● ",
 					format = function(diagnostic)
 						local diagnostic_message = {
-							[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.message,
-							[vim.diagnostic.severity.WARN] = "󰀪 " .. diagnostic.message,
-							[vim.diagnostic.severity.INFO] = "󰋽 " .. diagnostic.message,
-							[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.message,
+							[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.code,
+							[vim.diagnostic.severity.WARN] = "󰀪 ",
+							[vim.diagnostic.severity.INFO] = "󰋽 ",
+							[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.code,
 						}
 						return diagnostic_message[diagnostic.severity]
 					end,
 				},
 			})
-			vim.diagnostic.open_float()
+			local diag_float_group = vim.api.nvim_create_augroup("DiagnosticFloatHover", {})
+
+			vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
+				group = diag_float_group,
+				callback = function()
+					vim.diagnostic.open_float(nil, {
+						scope = "cursor",
+						float = {
+							style = "minimal",
+						},
+						source = true,
+						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+						focus_id = "cursor-diagnostics",
+					})
+				end,
+			})
+
+			vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
+				group = diag_float_group,
+				callback = function()
+					vim.cmd("pclose")
+				end,
+			})
 
 			local capabilities = require("blink.cmp").get_lsp_capabilities()
 
