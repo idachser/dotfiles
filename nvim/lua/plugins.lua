@@ -155,10 +155,10 @@ return {
 					prefix = "● ",
 					format = function(diagnostic)
 						local diagnostic_message = {
-							[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.code,
-							[vim.diagnostic.severity.WARN] = "󰀪 ",
-							[vim.diagnostic.severity.INFO] = "󰋽 ",
-							[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.code,
+							[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.message,
+							[vim.diagnostic.severity.WARN] = "󰀪 " .. diagnostic.message,
+							[vim.diagnostic.severity.INFO] = "󰋽 " .. diagnostic.message,
+							[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.message,
 						}
 						return diagnostic_message[diagnostic.severity]
 					end,
@@ -235,7 +235,7 @@ return {
 			-- to check the current status of installed tools run :Mason
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
-				"stylua", -- format Lua code
+				"stylua",
 				"ruff",
 				"prettier",
 				"eslint",
