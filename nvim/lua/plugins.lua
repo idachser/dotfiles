@@ -49,12 +49,11 @@ return {
 			configs.setup({
 				ensure_installed = {
 					"c",
+					"go",
 					"lua",
 					"vim",
 					"vimdoc",
 					"query",
-					"elixir",
-					"heex",
 					"javascript",
 					"html",
 					"python",
@@ -62,6 +61,7 @@ return {
 					"typescript",
 					"markdown",
 					"xml",
+					"yaml",
 				},
 				sync_install = false,
 				highlight = { enable = true },
@@ -197,6 +197,17 @@ return {
 			--  - settings (table): Override the default settings passed when initializing the server.
 			local servers = {
 				clangd = {},
+				gopls = {
+					settings = {
+						gopls = {
+							analyses = {
+								unusedparams = true,
+							},
+							staticcheck = true,
+							gofumpt = true,
+						},
+					},
+				},
 				pyright = {
 					settings = {
 						pyright = {
@@ -230,6 +241,7 @@ return {
 						},
 					},
 				},
+				yamlls = {},
 			}
 
 			-- to check the current status of installed tools run :Mason
@@ -291,6 +303,12 @@ return {
 			end,
 			formatters_by_ft = {
 				c = { "clang-format" },
+				go = {
+					"gofumpt",
+					"golines",
+					"goimports",
+					"golangci-lint",
+				},
 				cpp = { "clang-format" },
 				lua = { "stylua" },
 				python = {
@@ -302,6 +320,7 @@ return {
 					"ruff_organize_imports",
 				},
 				javascript = { "prettier" },
+				yaml = { "yamlfix" },
 			},
 		},
 	},
