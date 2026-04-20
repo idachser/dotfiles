@@ -90,186 +90,189 @@ return {
 			},
 		},
 	},
-	{
-		-- Main LSP Configuration
-		"neovim/nvim-lspconfig",
-		dependencies = {
+		{
+			-- Main LSP Configuration
+			"neovim/nvim-lspconfig",
+			dependencies = {
 			-- Automatically install LSPs and related tools to stdpath for Neovim
 			{ "mason-org/mason.nvim", opts = {} },
 			"mason-org/mason-lspconfig.nvim",
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
 
-			-- Useful status updates for LSP.
-			{ "j-hui/fidget.nvim", opts = {} },
+				-- Useful status updates for LSP.
+				{ "j-hui/fidget.nvim", opts = {} },
 
-			-- Allows extra capabilities provided by blink.cmp
-			"saghen/blink.cmp",
-		},
-		config = function()
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
-				callback = function(event)
-					-- The following code creates a keymap to toggle inlay hints in your
-					-- code, if the language server you are using supports them
-					--
-					-- This may be unwanted, since they displace some of your code
-					if
-						client
-						and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
-					then
-						map("<leader>th", function()
-							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-						end, "[T]oggle Inlay [H]ints")
-					end
-				end,
-			})
+				-- Allows extra capabilities provided by blink.cmp
+				"saghen/blink.cmp",
+			},
+			config = function()
+				vim.api.nvim_create_autocmd("LspAttach", {
+					group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
+					callback = function(event)
+						local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-			-- Diagnostic Config
-			-- See :help vim.diagnostic.Opts
-
-			vim.o.updatetime = 2000 -- 2 sec holding coursor to open diagnostic popup window
-			vim.diagnostic.config({
-				severity_sort = true,
-				update_in_insert = false,
-				float = {
-					float = {
-						style = "minimal",
-					},
-					border = "solid",
-					source = true,
-					header = "",
-					close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-				},
-				underline = { severity = vim.diagnostic.severity.ERROR },
-				signs = vim.g.have_nerd_font and {
-					text = {
-						[vim.diagnostic.severity.ERROR] = "󰅚 ",
-						[vim.diagnostic.severity.WARN] = "󰀪 ",
-						[vim.diagnostic.severity.INFO] = "󰋽 ",
-						[vim.diagnostic.severity.HINT] = "󰌶 ",
-					},
-				} or {},
-				virtual_text = {
-					source = "if_many",
-					spacing = 1,
-					prefix = "● ",
-					format = function(diagnostic)
-						local diagnostic_message = {
-							[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.message,
-							[vim.diagnostic.severity.WARN] = "󰀪 " .. diagnostic.message,
-							[vim.diagnostic.severity.INFO] = "󰋽 " .. diagnostic.message,
-							[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.message,
-						}
-						return diagnostic_message[diagnostic.severity]
+						-- The following code creates a keymap to toggle inlay hints in your
+						-- code, if the language server you are using supports them
+						--
+						-- This may be unwanted, since they displace some of your code
+						if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+							vim.keymap.set("n", "<leader>th", function()
+								vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+							end, { buffer = event.buf, desc = "[T]oggle Inlay [H]ints" })
+						end
 					end,
-				},
-			})
-			local diag_float_group = vim.api.nvim_create_augroup("DiagnosticFloatHover", {})
+				})
 
-			vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
-				group = diag_float_group,
-				callback = function()
-					vim.diagnostic.open_float(nil, {
-						scope = "cursor",
+				-- Diagnostic Config
+				-- See :help vim.diagnostic.Opts
+
+				vim.o.updatetime = 2000 -- 2 sec holding coursor to open diagnostic popup window
+				vim.diagnostic.config({
+					severity_sort = true,
+					update_in_insert = false,
+					float = {
 						float = {
 							style = "minimal",
 						},
+						border = "solid",
 						source = true,
+						header = "",
 						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-						focus_id = "cursor-diagnostics",
-					})
-				end,
-			})
-
-			vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
-				group = diag_float_group,
-				callback = function()
-					vim.cmd("pclose")
-				end,
-			})
-
-			local capabilities = require("blink.cmp").get_lsp_capabilities()
-
-			--  additional override configuration in the following tables. Available keys are:
-			--  - cmd (table): Override the default command used to start the server
-			--  - filetypes (table): Override the default list of associated filetypes for the server
-			--  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-			--  - settings (table): Override the default settings passed when initializing the server.
-			local servers = {
-				clangd = {},
-				gopls = {
-					settings = {
-						gopls = {
-							analyses = {
-								unusedparams = true,
-							},
-							staticcheck = true,
-							gofumpt = true,
-						},
 					},
-				},
-				pyright = {
-					settings = {
-						pyright = {
-							-- Using Ruff's import organizer
-							disableOrganizeImports = true,
+					underline = { severity = vim.diagnostic.severity.ERROR },
+					signs = vim.g.have_nerd_font and {
+						text = {
+							[vim.diagnostic.severity.ERROR] = "󰅚 ",
+							[vim.diagnostic.severity.WARN] = "󰀪 ",
+							[vim.diagnostic.severity.INFO] = "󰋽 ",
+							[vim.diagnostic.severity.HINT] = "󰌶 ",
 						},
-						python = {
-							analysis = {
-								-- Ignore all files for analysis to exclusively use Ruff for linting
-								ignore = { "*" },
-							},
-						},
+					} or {},
+					virtual_text = {
+						source = "if_many",
+						spacing = 1,
+						prefix = "● ",
+						format = function(diagnostic)
+							local diagnostic_message = {
+								[vim.diagnostic.severity.ERROR] = "󰅚 " .. diagnostic.message,
+								[vim.diagnostic.severity.WARN] = "󰀪 " .. diagnostic.message,
+								[vim.diagnostic.severity.INFO] = "󰋽 " .. diagnostic.message,
+								[vim.diagnostic.severity.HINT] = "󰌶 " .. diagnostic.message,
+							}
+							return diagnostic_message[diagnostic.severity]
+						end,
 					},
-				},
-				ruff = {},
-				sqruff = {},
-				ts_ls = {},
-				cssls = {},
-				html = {},
-				lua_ls = {
-					-- cmd = { ... },
-					-- filetypes = { ... },
-					-- capabilities = {},
-					settings = {
-						Lua = {
-							completion = {
-								callSnippet = "Replace",
+				})
+				local diag_float_group = vim.api.nvim_create_augroup("DiagnosticFloatHover", {})
+
+				vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
+					group = diag_float_group,
+					callback = function()
+						vim.diagnostic.open_float(nil, {
+							scope = "cursor",
+							float = {
+								style = "minimal",
 							},
-							-- ignore Lua_LS's noisy `missing-fields` warnings
-							diagnostics = { disable = { "missing-fields" } },
-						},
-					},
-				},
-				yamlls = {},
-			}
-
-			-- to check the current status of installed tools run :Mason
-			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, {
-				"stylua",
-				"ruff",
-				"prettier",
-				"eslint",
-			})
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
-
-			require("mason-lspconfig").setup({
-				ensure_installed = {},
-				automatic_installation = false,
-				handlers = {
-					function(server_name)
-						local server = servers[server_name] or {}
-						-- This handles overriding only values explicitly passed
-						-- by the server configuration above. Useful when disabling
-						-- certain features of an LSP (for example, turning off formatting for ts_ls)
-						server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-						require("lspconfig")[server_name].setup(server)
+							source = true,
+							close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+							focus_id = "cursor-diagnostics",
+						})
 					end,
-				},
-			})
-		end,
-	},
+				})
+
+				vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
+					group = diag_float_group,
+					callback = function()
+						vim.cmd("pclose")
+					end,
+				})
+
+				local capabilities = require("blink.cmp").get_lsp_capabilities()
+
+				--  additional override configuration in the following tables. Available keys are:
+				--  - cmd (table): Override the default command used to start the server
+				--  - filetypes (table): Override the default list of associated filetypes for the server
+				--  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
+				--  - settings (table): Override the default settings passed when initializing the server.
+				local servers = {
+					clangd = {},
+					gopls = {
+						settings = {
+							gopls = {
+								analyses = {
+									unusedparams = true,
+								},
+								staticcheck = true,
+								gofumpt = true,
+							},
+						},
+					},
+					pyright = {
+						settings = {
+							pyright = {
+								-- Using Ruff's import organizer
+								disableOrganizeImports = true,
+							},
+							python = {
+								analysis = {
+									-- Ignore all files for analysis to exclusively use Ruff for linting
+									ignore = { "*" },
+								},
+							},
+						},
+					},
+					ruff = {},
+					sqruff = {},
+					ts_ls = {},
+					cssls = {},
+					html = {},
+					lua_ls = {
+						-- cmd = { ... },
+						-- filetypes = { ... },
+						-- capabilities = {},
+						settings = {
+							Lua = {
+								completion = {
+									callSnippet = "Replace",
+								},
+								-- ignore Lua_LS's noisy `missing-fields` warnings
+								diagnostics = { disable = { "missing-fields" } },
+							},
+						},
+					},
+					yamlls = {},
+				}
+
+				-- to check the current status of installed tools run :Mason
+				local ensure_installed = vim.tbl_keys(servers or {})
+				vim.list_extend(ensure_installed, {
+					"gofumpt",
+					"golines",
+					"goimports",
+					"stylua",
+					"ruff",
+					"prettier",
+					"eslint",
+					"yamlfix",
+				})
+				require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+
+				require("mason-lspconfig").setup({
+					ensure_installed = {},
+					automatic_installation = false,
+					handlers = {
+						function(server_name)
+							local server = servers[server_name] or {}
+							-- This handles overriding only values explicitly passed
+							-- by the server configuration above. Useful when disabling
+							-- certain features of an LSP (for example, turning off formatting for ts_ls)
+							server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
+							require("lspconfig")[server_name].setup(server)
+						end,
+					},
+				})
+			end,
+		},
 
 	{ -- Autoformat
 		"stevearc/conform.nvim",
@@ -284,45 +287,44 @@ return {
 				mode = "",
 				desc = "[F]ormat buffer",
 			},
-		},
-		opts = {
-			notify_on_error = false,
-			format_on_save = function(bufnr)
-				-- Disable "format_on_save lsp_fallback" for languages that don't
-				-- have a well standardized coding style. You can add additional
-				-- languages here or re-enable it for the disabled ones.
-				local disable_filetypes = { c = true, cpp = true }
-				if disable_filetypes[vim.bo[bufnr].filetype] then
-					return nil
-				else
-					return {
-						timeout_ms = 500,
-						lsp_format = "fallback",
-					}
-				end
-			end,
-			formatters_by_ft = {
-				c = { "clang-format" },
-				go = {
-					"gofumpt",
-					"golines",
-					"goimports",
-					"golangci-lint",
-				},
-				cpp = { "clang-format" },
-				lua = { "stylua" },
-				python = {
-					-- To fix auto-fixable lint errors.
-					"ruff_fix",
-					-- To run the Ruff formatter.
-					"ruff_format",
-					-- To organize the imports.
-					"ruff_organize_imports",
-				},
-				javascript = { "prettier" },
-				yaml = { "yamlfix" },
 			},
-		},
+			opts = {
+				notify_on_error = false,
+				format_on_save = function(bufnr)
+					-- Disable "format_on_save lsp_fallback" for languages that don't
+					-- have a well standardized coding style. You can add additional
+					-- languages here or re-enable it for the disabled ones.
+					local disable_filetypes = { c = true, cpp = true }
+					if disable_filetypes[vim.bo[bufnr].filetype] then
+						return nil
+					else
+						return {
+							timeout_ms = 500,
+							lsp_format = "fallback",
+						}
+					end
+				end,
+				formatters_by_ft = {
+					c = { "clang-format" },
+					go = {
+						"gofumpt",
+						"golines",
+						"goimports",
+					},
+					cpp = { "clang-format" },
+					lua = { "stylua" },
+					python = {
+						-- To fix auto-fixable lint errors.
+						"ruff_fix",
+						-- To run the Ruff formatter.
+						"ruff_format",
+						-- To organize the imports.
+						"ruff_organize_imports",
+					},
+					javascript = { "prettier" },
+					yaml = { "yamlfix" },
+				},
+			},
 	},
 
 	{ -- Autocompletion
