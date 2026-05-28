@@ -42,11 +42,13 @@ return {
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
-		branch = "master",
+		lazy = false,
 		build = ":TSUpdate",
 		config = function()
-			require("nvim-treesitter.configs").setup({
-				ensure_installed = {
+			require("nvim-treesitter").setup({})
+
+			vim.schedule(function()
+				require("nvim-treesitter").install({
 					"c",
 					"go",
 					"lua",
@@ -59,11 +61,17 @@ return {
 					"json",
 					"typescript",
 					"markdown",
+					"markdown_inline",
 					"xml",
 					"yaml",
-				},
-				highlight = { enable = true },
-				indent = { enable = true },
+				})
+			end)
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = { "*" },
+				callback = function()
+					pcall(vim.treesitter.start)
+				end,
 			})
 		end,
 	},
@@ -224,6 +232,7 @@ return {
 				ts_ls = {},
 				cssls = {},
 				html = {},
+				marksman = {},
 				lua_ls = {
 					-- cmd = { ... },
 					-- filetypes = { ... },
@@ -252,6 +261,8 @@ return {
 				"prettier",
 				"eslint",
 				"yamlfix",
+				"markdownlint-cli2",
+				"markdown-toc",
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -395,6 +406,18 @@ return {
 
 			-- Shows a signature help window while you type arguments for a function
 			signature = { enabled = true },
+		},
+	},
+	{ -- Markdown Render
+		"MeanderingProgrammer/render-markdown.nvim",
+		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+		---@module 'render-markdown'
+		---@type render.md.UserConfig
+		opts = {
+			completions = {
+				blink = { enabled = true },
+				lsp = { enabled = true },
+			},
 		},
 	},
 }
