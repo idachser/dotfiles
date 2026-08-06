@@ -193,7 +193,11 @@ return {
 				end,
 			})
 
-			local capabilities = require("blink.cmp").get_lsp_capabilities()
+			-- blink.cmp only adds its own capabilities here; Neovim merges them
+			-- with the client defaults when the server starts.
+			vim.lsp.config("*", {
+				capabilities = require("blink.cmp").get_lsp_capabilities({}, false),
+			})
 
 			--  additional override configuration in the following tables. Available keys are:
 			--  - cmd (table): Override the default command used to start the server
@@ -266,19 +270,18 @@ return {
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
+			-- Merge our overrides on top of the defaults nvim-lspconfig ships in
+			-- its `lsp/` directory. Only values set above are overridden.
+			for server_name, server_opts in pairs(servers) do
+				if not vim.tbl_isempty(server_opts) then
+					vim.lsp.config(server_name, server_opts)
+				end
+			end
+
+			-- Installed servers are enabled automatically via `vim.lsp.enable()`;
+			-- mason-tool-installer above handles installing them.
 			require("mason-lspconfig").setup({
 				ensure_installed = {},
-				automatic_installation = false,
-				handlers = {
-					function(server_name)
-						local server = servers[server_name] or {}
-						-- This handles overriding only values explicitly passed
-						-- by the server configuration above. Useful when disabling
-						-- certain features of an LSP (for example, turning off formatting for ts_ls)
-						server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-						require("lspconfig")[server_name].setup(server)
-					end,
-				},
 			})
 		end,
 	},
