@@ -1,11 +1,13 @@
 # Neovim Config
 
 Minimal Neovim setup focused on LSP, completion, and formatting.
-Uses **stable treesitter** (`master` branch).
+Uses nvim-treesitter's **`main`** branch.
 
 ---
 
 ### Requirements
+
+Neovim **0.12.0 or later** — required by the `main` branch of nvim-treesitter.
 
 Install system dependencies:
 
@@ -55,8 +57,9 @@ Ensure all tools are installed.
 
 #### Syntax Highlighting
 
-* nvim-treesitter (`master` branch)
-* parsers installed via `:TSUpdate`
+* nvim-treesitter (`main` branch)
+* parsers installed on startup via `require("nvim-treesitter").install(...)`
+* update them with `:TSUpdate`
 
 Languages:
 c, go, lua, vim, javascript, html, python, json, typescript, markdown, xml, yaml
@@ -127,7 +130,7 @@ Sources:
 
 ### Notes
 
-* uses stable treesitter (`master`)
+* uses the `main` branch of nvim-treesitter, which needs Neovim 0.12+
 * mason requires system tools (e.g. `unzip`)
 * some tools are installed via pip/npm/cargo
 
