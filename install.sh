@@ -89,5 +89,10 @@ done
 [ "$DRY_RUN" -eq 1 ] && log "(dry run — nothing will be changed)"
 
 link nvim "$CONFIG_HOME/nvim"
+# Only kitty.conf: the rest of ~/.config/kitty (current-theme.conf and the
+# *.auto.conf files kitty generates) is not tracked here, so linking the whole
+# directory would break the `include current-theme.conf` at the bottom.
+link kitty.conf "$CONFIG_HOME/kitty/kitty.conf"
+link .tmux.conf "$HOME/.tmux.conf"
 
 log "done."
