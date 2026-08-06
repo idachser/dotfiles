@@ -7,7 +7,6 @@ alias v="nvim"
 alias py="python3.13"
 alias ll="ls -AoFhg --group-directories-first"
 alias bat="batcat"
-alias hserver="ssh _hyypia@89.110.72.67"
 
 # If not running interactively, don't do anything
 case $- in
