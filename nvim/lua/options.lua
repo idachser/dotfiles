@@ -1,20 +1,20 @@
 local set = vim.opt
 
+set.mouse = "a" -- enables mouse support
 set.number = true -- make line numbers
--- set.relativenumber = true
-set.mouse = "a"
-set.encoding = "utf-8"
-set.swapfile = false
-set.tabstop = 4
-set.softtabstop = 4
-set.shiftwidth = 4
-set.expandtab = true
-set.autoindent = true
+set.cursorline = true -- highlight the text line of the cursor
+-- set.relativenumber = true -- show the line number relative to the line with the cursor in front of each line
+set.encoding = "utf-8" -- string-encoding used internally and for RPC communication. Always UTF-8
+set.swapfile = false -- use a swapfile for the buffer
+set.tabstop = 4 -- defines the column multiple used to display the Horizontal Tab
+set.softtabstop = 4 -- create soft tab stops
+set.shiftwidth = 4 -- number of columns that make up one level of (auto)indentation
+set.wrap = true -- changes how text is displayed
+set.expandtab = true -- use the appropriate number of spaces to insert a <Tab>
+set.smartindent = true -- smart autoindenting when starting a new line
+set.autoindent = true -- copy indent from current line when starting a new line
 set.scrolloff = 7 -- number of screen lines to keep above and below the cursor
-set.colorcolumn = "79"
-set.updatetime = 300
+set.colorcolumn = "79" -- is a comma-separated list of screen columns
 set.cmdheight = 2 -- more space in the neovim command line for displaying messages
 set.signcolumn = "yes" -- always show the sign column, otherwise it would shift the text each time
-set.cursorline = true
-set.confirm = true -- raise a dialog asking if you wish to save the current file(s)
-
+set.confirm = true -- raise a dialog asking if you wish to save the current file(s)k
